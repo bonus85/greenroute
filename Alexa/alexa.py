@@ -7,8 +7,11 @@ Alexa skill endpoint demo
 
 import json
 import datetime
+import sys
 
 import cherrypy
+
+import logic
 
 DATE_FORMAT = "%Y-%m-%d" # Used by AMAZON.DATE
 
@@ -63,6 +66,8 @@ class AlexaSkill:
             "AMAZON.CancelIntent": self._cancel_intent,
         }
         
+        self.manager = logic.RouteManager()
+        
     def _get_route_intent(self, data):
         """
         Route from <FromLocation> to <ToLocation>
@@ -70,8 +75,7 @@ class AlexaSkill:
         from_location = data["slots"]["FromLocation"]["value"]
         to_location = data["slots"]["ToLocation"]["value"]
         return self.build_response(
-            "Do you really want to go to {}? "
-            "You should stay at {} and have a beer instead".format(to_location, from_location))
+            self.manager.get_route_recomendation(to_location, from_location)[1])
             
     def _quick_route_intent(self, data):
         """
@@ -84,9 +88,9 @@ class AlexaSkill:
         """
         Route from Home to the nearest location of type <LocationType>
         """
-        data["slots"]["FromLocation"] = {"value":"home"}
-        data["slots"]["ToLocation"] = {"value":data["slots"]["LocationType"]["value"]}
-        return self._get_route_intent(data)
+        location_type = data["slots"]["LocationType"]["value"]
+        return self.build_response(
+            self.manager.get_nearest_location(location_type)[1])
         
     def _help_intent(self, data):
         """
