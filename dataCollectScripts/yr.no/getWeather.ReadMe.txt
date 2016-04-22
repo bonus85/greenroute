@@ -1,7 +1,0 @@
-Getting Data from yr.no
-Using library python-yr
-GitHub: https://github.com/wckd/python-yr
-Installation: 
-pip3 install python-yr
-
-
