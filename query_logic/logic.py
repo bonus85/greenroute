@@ -4,6 +4,9 @@
 """
 import datetime
 
+RAIN_TRESHOLD = 1.0 # mm
+WIND_TRESHOLD = 5.0 # m/s
+
 class RouteManager:
 
     def __init__(self):
@@ -27,17 +30,34 @@ class RouteManager:
         fastest_mode = time_ranking[0]
         greenest_mode = green_ranking[0]
         
-        response = {
+        response_dict = {
             "greenest": route_data["transportation"][greenest_mode],
             "fastest": route_data["transportation"][fastest_mode],
             "weather": route_data["weather"]
         }
         
-        return response
+        response_string = ("The greenest route is by {greenest} and the fastest is by {fastest}. "
+            "By {greenest} you save {co2_saved} kilos of carbon dioxide. ").format(
+            greenest = greenest_mode,
+            fastest = fastest_mode,
+            co2_saved = route_data["transportation"][fastest_mode]["co2"] -
+                route_data["transportation"][greenest_mode]["co2"]
+            )
+        
+        return response_dict, response_string
     
     def get_nearest_location(self, location_category):
-        location_data = self.data_hub.get_nearest(location_category)
-        return location_data
+        location_data = self.data_hub.get_nearest_location(location_category)
+        
+        response_string = "The nearest {category} is the {name}.".format(
+            category = location_category,
+            name = location_data["location"]["name"]
+        )
+        if location_data["weather"]["rain"][1] > RAIN_TRESHOLD:
+            response_string += " Remember your raincoat."
+        if location_data["weather"]["wind"][1] > WIND_TRESHOLD:
+            response_string += " It is windy, so put on warm clothes"
+        return location_data, response_string
         
 class DummyDataHub:
     
@@ -105,5 +125,10 @@ class DummyDataHub:
 
 if __name__ == '__main__':
     manager = RouteManager()
-    manager.get_route_recomendation('home', 'work')
+    
+    response, string = manager.get_route_recomendation('home', 'work')
+    print string
+    
+    response, string = manager.get_nearest_location('playground')
+    print string
 
