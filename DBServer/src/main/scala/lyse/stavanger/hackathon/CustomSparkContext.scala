@@ -34,8 +34,8 @@ object CustomSparkContext {
       println(classPath)
       val sourceDir = classPath.substring("file:".length, classPath.indexOf("/bin") + "/bin".length).toString()
 
-      jar.create(File("/tmp/StavangerHackathon-0.1.jar"), Directory(sourceDir), "Incognito")
-      sparkConf.setJars("/tmp/StavangerHackathon-0.1.jar" :: Nil)
+      jar.create(File("/tmp/GreenRouteDB-0.1.jar"), Directory(sourceDir), "DataNorge")
+      sparkConf.setJars("/tmp/GreenRouteDB-0.1.jar" :: Nil)
     }
     val sc = new SparkContext(sparkConf)
     sc

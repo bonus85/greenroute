@@ -9,7 +9,7 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions._
 
-object DataNorge {
+object Utils {
   val d2r = math.Pi / 180.0
   def haversine_km(lat1: Column, long1: Column, lat2: Double, long2: Double) = {
     val dlong = (long1 - long2) * d2r;
@@ -20,6 +20,8 @@ object DataNorge {
     val d = c * 6367
     d
   }
+}
+object DataNorge {
 
   def main(args: Array[String]) = {
     val numCores = args(0).toInt
@@ -69,30 +71,30 @@ object DataNorge {
         //for datasource Skoleruter we use either of the following conditions
         val dato = request.getParameter("dato")
         val skole = request.getParameter("skole")
-        val out = 
-        datasets.map {
-          var out = ""
-          source =>
-            val df = sqlContext.sql("select * from " + source)
-            
-            if (longitude != 0.toDouble && latitude != 0.toDouble && source != "skoleruter") {
-              val dfFields = df.schema.fields.map(_.name)
-              val dfLongitudeArtName = dfFields.filter { x =>
-                columnsAndAliasOfTypeLongitude.contains(x)
-              }.head
-              val dfLatitudeArtName = dfFields.filter { x =>
-                columnsAndAliasOfTypeLatitude.contains(x)
-              }.head
-              out = "[" + source + "={" + df.where(haversine_km(df(dfLatitudeArtName), df(dfLongitudeArtName), latitude, longitude).leq(radius))
-                .toJSON.collect.mkString(",") + "}]"
-            }
-            
-            if (dato != null && skole != null && source=="skoleruter") {
-              out = "[" + source + "={" + df.where(df("dato") === dato && df("skole") === skole)
-                .toJSON.collect.mkString(",") + "}]"
-            }
-           out             
-        }.mkString("\n")
+        val out =
+          datasets.map {
+            var out = ""
+            source =>
+              val df = sqlContext.sql("select * from " + source)
+
+              if (longitude != 0.toDouble && latitude != 0.toDouble && source != "skoleruter") {
+                val dfFields = df.schema.fields.map(_.name)
+                val dfLongitudeArtName = dfFields.filter { x =>
+                  columnsAndAliasOfTypeLongitude.contains(x.toLowerCase())
+                }.head
+                val dfLatitudeArtName = dfFields.filter { x =>
+                  columnsAndAliasOfTypeLatitude.contains(x.toLowerCase())
+                }.head
+                out = "{" + source + "={" + df.where(Utils.haversine_km(df(dfLatitudeArtName), df(dfLongitudeArtName), latitude, longitude).leq(radius))
+                  .toJSON.collect.mkString(",") + "}}"
+              }
+
+              if (dato != null && skole != null && source == "skoleruter") {
+                out = "{" + source + "={" + df.where(df("dato") === dato && df("skole") === skole)
+                  .toJSON.collect.mkString(",") + "}}"
+              }
+              out
+          }.mkString(",")
         StaticServerResponse(Text_Json, out, 200)
     }
 
