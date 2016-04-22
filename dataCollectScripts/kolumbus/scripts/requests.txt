@@ -1,0 +1,66 @@
+SIRI SX:
+ 
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:siri="http://www.kolumbus.no/siri" xmlns:siri1="http://www.siri.org.uk/siri" xmlns:acsb="http://www.ifopt.org.uk/acsb">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <siri:GetSituationExchange>
+         <ServiceRequestInfo>
+            <siri1:RequestTimestamp>2013-05-22T12:20:40+02:00</siri1:RequestTimestamp>
+            <siri1:RequestorRef>testreference</siri1:RequestorRef>
+         </ServiceRequestInfo>
+         <Request version="1.4">
+            <siri1:RequestTimestamp>2013-05-22T12:20:40+02:00</siri1:RequestTimestamp>
+         </Request>
+        <RequestExtension>
+            <!--You may enter ANY elements at this point-->
+         </RequestExtension>
+      </siri:GetSituationExchange>
+   </soapenv:Body>
+</soapenv:Envelope>
+ 
+SIRI VM:
+ 
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:siri="http://www.kolumbus.no/siri" xmlns:siri1="http://www.siri.org.uk/siri">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <siri:GetVehicleMonitoring>
+         <ServiceRequestInfo>
+           
+            <siri1:RequestTimestamp>2013-05-22T12:20:40+02:00</siri1:RequestTimestamp>
+            <siri1:RequestorRef> testreference </siri1:RequestorRef>
+            <!--Optional:-->
+            <siri1:MessageIdentifier>?</siri1:MessageIdentifier>
+         </ServiceRequestInfo>
+         <Request version="1.4">
+            <siri1:RequestTimestamp>2013-05-22T12:20:40+02:00</siri1:RequestTimestamp>
+            <!--Optional:-->
+            <siri1:MessageIdentifier>test</siri1:MessageIdentifier>
+           
+         </Request>
+ 
+      </siri:GetVehicleMonitoring>
+   </soapenv:Body>
+</soapenv:Envelope>
+ 
+SIRI SM:
+ 
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:siri="http://www.kolumbus.no/siri" xmlns:siri1="http://www.siri.org.uk/siri">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <siri:GetStopMonitoring>
+         <ServiceRequestInfo>
+            <siri1:RequestTimestamp>2014-09-12T13:13:22.5503916+01:00</siri1:RequestTimestamp>
+            <siri1:RequestorRef>testreference</siri1:RequestorRef>
+            <!--Optional:-->
+            <siri1:MessageIdentifier>SWM001</siri1:MessageIdentifier>
+         </ServiceRequestInfo>
+         <Request version="1.4">
+            <siri1:RequestTimestamp>2014-09-12T13:13:22.5503916+01:00</siri1:RequestTimestamp>
+            <!--Optional:-->
+            <siri1:MessageIdentifier>SWM</siri1:MessageIdentifier>
+            <siri1:MonitoringRef>11031542</siri1:MonitoringRef>
+           
+         </Request>
+      </siri:GetStopMonitoring>
+   </soapenv:Body>
+</soapenv:Envelope>
