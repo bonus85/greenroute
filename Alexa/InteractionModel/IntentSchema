@@ -1,0 +1,70 @@
+{
+  "intents": [
+    {
+      "intent": "GetRouteIntent",
+      "slots": [
+        {
+          "name": "FromLocation",
+          "type": "LIST_OF_LOCATIONS"
+        },
+        {
+          "name": "ToLocation",
+          "type": "LIST_OF_LOCATIONS"
+        }
+      ]
+    },
+    {
+      "intent": "QuickRouteIntent",
+      "slots": [
+        {
+          "name": "ToLocation",
+          "type": "LIST_OF_LOCATIONS"
+        }
+      ]
+    },
+    {
+      "intent": "NearestLocationIntent",
+      "slots": [
+        {
+          "name": "LocationType",
+          "type": "LOCATION_TYPE"
+        }
+      ]
+    },
+    {
+      "intent": "SetLocationIntent",
+      "slots": [
+        {
+          "name": "Location",
+          "type": "LIST_OF_LOCATIONS"
+        },
+        {
+          "name": "RoadName",
+          "type": "LITERAL"
+        },
+        {
+          "name": "RoadNumber",
+          "type": "AMAZON.NUMBER"
+        }
+      ]
+    },
+    {
+      "intent": "DialogIntent",
+      "slots": [
+        {
+          "name": "Date",
+          "type": "AMAZON.DATE"
+        }
+      ]
+    },
+    {
+      "intent": "AMAZON.HelpIntent"
+    },
+    {
+      "intent": "AMAZON.StopIntent"
+    },
+    {
+      "intent": "AMAZON.CancelIntent"
+    }
+  ]
+}

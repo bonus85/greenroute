@@ -1,0 +1,14 @@
+GetRouteIntent get route from {FromLocation} to {ToLocation}
+GetRouteIntent how to get from {FromLocation} to {ToLocation}
+
+QuickRouteIntent what is the quickest route to {ToLocation}
+QuickRouteIntent what's the quickest route to {ToLocation}
+QuickRouteIntent for the quickest route to {ToLocation}
+
+NearestLocationIntent where is the nearest {LocationType}
+
+SetLocationIntent set {Location} to {regent street|RoadName} {RoadNumber}
+SetLocationIntent set {Location} to {green road|RoadName} {RoadNumber}
+
+DialogIntent when is {Date}
+
