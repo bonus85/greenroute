@@ -1,0 +1,12 @@
+{
+    "walking": 0.0,
+    "bicycling": 0.0,
+    "train": 0.014,
+    "bus": 0.068,
+    "electric_car": 0.070,
+    "small_car": 0.150,
+    "large_car": 0.250,
+    "motorcycle": 0.085,
+    "unit": "kg/km"
+}
+
