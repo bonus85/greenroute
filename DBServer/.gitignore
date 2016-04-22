@@ -1,0 +1,7 @@
+bin/
+project/
+target/
+.settings/
+.cache-main
+.classpath
+.Rproj.user
