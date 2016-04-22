@@ -10,23 +10,34 @@ class RouteManager:
         self.data_hub = DummyDataHub()
     
     def get_route_recomendation(self, from_location, to_location, _time=None):
-        route_data = self.data_hub.get_route_data(from_location, to_location, _time)
+        route_data = self.data_hub.get_route_data(
+            from_location, to_location, _time)
         
         # Sort from fast to slow
-        time_ranking = [(key, value["time"]) 
-            for key, value in route_data["transportation"].iteritems()]
-        time_ranking.sort(key=lambda tup: tup[1])
+        time_ranking = route_data["transportation"].keys()
+        time_ranking.sort(
+            key=lambda mode: route_data["transportation"][mode]["time"])
         
         # Sort from green to black
-        green_ranking = [(key, value["co2"]) 
-            for key, value in route_data["transportation"].iteritems()]
-        green_ranking.sort(key=lambda tup: tup[1])
+        green_ranking = route_data["transportation"].keys()
+        green_ranking.sort(
+            key=lambda mode: route_data["transportation"][mode]["co2"])
         
         # get the highest ranked options
-        fastest_mode = time_ranking[0][0]
-        greenest_mode = green_ranking[0][0]
+        fastest_mode = time_ranking[0]
+        greenest_mode = green_ranking[0]
         
+        response = {
+            "greenest": route_data["transportation"][greenest_mode],
+            "fastest": route_data["transportation"][fastest_mode],
+            "weather": route_data["weather"]
+        }
         
+        return response
+    
+    def get_nearest_location(self, location_category):
+        location_data = self.data_hub.get_nearest(location_category)
+        return location_data
         
 class DummyDataHub:
     
@@ -75,12 +86,24 @@ class DummyDataHub:
                 "rain": (3, 4), # mm (min, max)
                 "wind": (12, 15), # m/s (min, max)
             }
-            
+        } # Dummy data
+        return data
+        
+    def get_nearest_location(self, location_category):
+        data = {
+            "location": {
+                "name": "Tjensvoll playground",
+                "lonlat": [12.3, 45.6]
+            },
+            "weather": {
+                "weather_string": "light rain",
+                "rain": (3, 4), # mm (min, max)
+                "wind": (12, 15), # m/s (min, max)
+            }
         } # Dummy data
         return data
 
 if __name__ == '__main__':
     manager = RouteManager()
-    
     manager.get_route_recomendation('home', 'work')
 
