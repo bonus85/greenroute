@@ -5,6 +5,7 @@ region=sys.argv[1]
 datasets=sys.argv[2]
 namenode=sys.argv[3]
 
+MY_HOME="/home/antorweep/git/greenroute"
 HADOOP_HOME="/home/antorweep/DevKits/hadoop-2.6.2"
 
 temppath="/tmp/data.norge"
@@ -33,5 +34,7 @@ os.system(HADOOP_HOME + "/bin/hadoop fs -mkdir " + namenode + "/data.norge/archi
 os.system(HADOOP_HOME + "/bin/hadoop fs -mv " + namenode + "/data.norge/current/* " + namenode + "/data.norge/archive/" + tm)
 os.system(HADOOP_HOME + "/bin/hadoop fs -copyFromLocal " + temppath + "/* " + namenode + "/data.norge/current")
 
+#Put the custom datasets into HDFS
+os.system(HADOOP_HOME + "/bin/hadoop fs -copyFromLocal " + MY_HOME + "/custom.data.bk/* " + namenode + "/data.norge/current")
 
 print("\nDataSets downloaded at " + tm)
