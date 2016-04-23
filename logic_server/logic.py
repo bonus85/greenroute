@@ -4,6 +4,7 @@
 """
 import datetime
 import json
+from math import radians, cos, sin, asin, sqrt
 
 import cherrypy
 import googlemaps
@@ -45,7 +46,7 @@ class RouteManager:
         response_dict["fastest"]["mode"] = fastest_mode
         
         response_dict["string"] = ("The greenest route is by {greenest} and the fastest is by {fastest}. "
-            "By {greenest} you save {co2_saved} kilos of carbon dioxide. ").format(
+            "By {greenest} you save {co2_saved:.2f} kilos of carbon dioxide. ").format(
             greenest = greenest_mode,
             fastest = fastest_mode,
             co2_saved = route_data["transportation"][fastest_mode]["co2"] -
@@ -57,9 +58,10 @@ class RouteManager:
     def get_nearest_location(self, location_category):
         location_data = self.data_hub.get_nearest_location(location_category)
         
-        location_data["string"] = "The nearest {category} is the {name}.".format(
+        location_data["string"] = "The nearest {category} is the {name}, which is {distance:.2f} kilometers away.".format(
             category = location_category,
-            name = location_data["location"]["name"]
+            name = location_data["location"]["name"],
+            distance = float(location_data["location"]["distance"])
         )
         if location_data["weather"]["rain"][1] > RAIN_TRESHOLD:
             location_data["string"] += " Remember your raincoat."
@@ -99,6 +101,8 @@ class DataHub:
             credentials = json.load(f)
         with open('locations.json') as f:
             self.locations = json.load(f)
+        with open('translation.json') as f:
+            self.translation = json.load(f)
         with open('co2_emissions_personal.json') as f:
             self.emissions = json.load(f)
         self.gmaps = googlemaps.Client(key=credentials['google_api_key'])
@@ -129,11 +133,48 @@ class DataHub:
         return {"transportation": directions, "weather": weather}
         
     def get_nearest_location(self, location_category):
-        raise NotImplementedError()
-        
-        #Implement this
-        #nearest = requests(DBServer ....)
+        source = self.translation[location_category]
+        my_location =  self.gmaps.geocode(self.locations["home"])
+        latitude = my_location[0]['geometry']['location']['lat']
+        longitude = my_location[0]['geometry']['location']['lng']
+        radius="10"
+        url = 'http://lego.fiicha.net:8080/DataNorge?source='+source+'&longitude='+str(longitude)+'&latitude='+str(latitude)+"&radius="+radius
+        r=requests.get(url)
+        location_list = r.json()[source]
+        location_list.sort(key=lambda d:
+            haversine(longitude, latitude, float(d['longitude']), float(d['latitude'])))
+            
+        data = {
+            "location": {
+                "name": "Tjensvoll playground",
+                "lonlat": [float(location_list[0]['longitude']), 
+                    float(location_list[0]['latitude'])],
+                "distance": haversine(longitude, latitude, 
+                    float(location_list[0]['longitude']),
+                    float(location_list[0]['latitude']))
+            },
+            "weather": {
+                "weather_string": "light rain",
+                "rain": (3, 4), # mm (min, max)
+                "wind": (12, 15), # m/s (min, max)
+            }
+        } # Dummy data
+        return data
 
+def haversine(lon1, lat1, lon2, lat2):
+    """
+    Calculate the great circle distance between two points 
+    on the earth (specified in decimal degrees)
+    """
+    # convert decimal degrees to radians 
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+    # haversine formula 
+    dlon = lon2 - lon1 
+    dlat = lat2 - lat1 
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a)) 
+    km = 6367 * c
+    return km
     
     
 class DummyDataHub(DataHub):
@@ -204,8 +245,8 @@ if __name__ == '__main__':
     manager = RouteManager()
     
     response, string = manager.get_route_recomendation('home', 'work')
-    print string
+    #print string
     
     response, string = manager.get_nearest_location('playground')
-    print string
+    #print string
 
