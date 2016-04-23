@@ -5,6 +5,8 @@
 import datetime
 
 import cherrypy
+import googlemaps
+import requests
 
 RAIN_TRESHOLD = 1.0 # mm
 WIND_TRESHOLD = 5.0 # m/s
@@ -89,7 +91,42 @@ class RouteManagerEndpoint(object):
         location_category = data["location_category"]
         return self.manager.get_nearest_location(location_category)
         
-class DummyDataHub:
+class DataHub:
+        
+    def __init__(self, key):
+        gmaps = googlemaps.Client(key='AIzaSyAlh3sDVO5ZGYJYIU4YsAbUvAGLKXwvTpI')
+        
+    def get_route_data(self, from_location, to_location, _time=None):
+        if _time is None:
+           _time = datetime.datetime.now()
+        
+        try:
+            geocode_result = gmaps.geocode('Hans E. Kincks gate 2c, Stavanger, Norway')
+        except googlemaps.exceptions.ApiError:
+            cherrypy.log("Please use an API key with access to the GoogleMaps API")
+        
+        directions = gmaps.directions('Hans E. Kincks gate 2c, Stavanger, Norway',
+            'Mariero, Stavanger, Norway')
+        
+        # Implement this    
+        #PSEUDO: weather = yr.weather(geocode_result)
+        weather = None
+        
+        #Do refactoring of results
+        
+        #Add CO2 calculations
+        
+        return {"transportation": directions, "weather": weather}
+        
+    def get_nearest_location(self, location_category):
+        raise NotImplementedError()
+        
+        #Implement this
+        #nearest = requests(DBServer ....)
+
+    
+    
+class DummyDataHub(DataHub):
     
     def get_coordinates(self, *args):
         if len(args) > 1:
