@@ -3,6 +3,7 @@
 @author: Sindre Tosse
 """
 import datetime
+import json
 
 import cherrypy
 import googlemaps
@@ -15,7 +16,7 @@ class RouteManager:
     exposed=True
 
     def __init__(self):
-        self.data_hub = DummyDataHub()
+        self.data_hub = DataHub()
     
     def get_route_recomendation(self, from_location, to_location, _time=None):
         route_data = self.data_hub.get_route_data(
@@ -93,28 +94,37 @@ class RouteManagerEndpoint(object):
         
 class DataHub:
         
-    def __init__(self, key):
-        gmaps = googlemaps.Client(key='AIzaSyAlh3sDVO5ZGYJYIU4YsAbUvAGLKXwvTpI')
+    def __init__(self):
+        with open('../credentials.json') as f:
+            credentials = json.load(f)
+        with open('locations.json') as f:
+            self.locations = json.load(f)
+        with open('co2_emissions_personal.json') as f:
+            self.emissions = json.load(f)
+        self.gmaps = googlemaps.Client(key=credentials['google_api_key'])
         
     def get_route_data(self, from_location, to_location, _time=None):
         if _time is None:
            _time = datetime.datetime.now()
+        from_location = self.locations[from_location]
+        to_location = self.locations[to_location]
         
         try:
-            geocode_result = gmaps.geocode('Hans E. Kincks gate 2c, Stavanger, Norway')
+            geocode_result = self.gmaps.geocode(from_location)
         except googlemaps.exceptions.ApiError:
             cherrypy.log("Please use an API key with access to the GoogleMaps API")
         
-        directions = gmaps.directions('Hans E. Kincks gate 2c, Stavanger, Norway',
-            'Mariero, Stavanger, Norway')
+        directions = {}
+        for mode in ('walking', 'bicycling', 'driving', 'transit'):
+            result = self.gmaps.directions(from_location, to_location, mode=mode)
+            directions[mode] = {
+                "time": result[0]['legs'][0]['duration']['value'],
+                "co2": result[0]['legs'][0]['distance']['value']*self.emissions[mode]*0.001
+            }
         
         # Implement this    
         #PSEUDO: weather = yr.weather(geocode_result)
         weather = None
-        
-        #Do refactoring of results
-        
-        #Add CO2 calculations
         
         return {"transportation": directions, "weather": weather}
         
