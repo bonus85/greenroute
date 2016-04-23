@@ -1,0 +1,3 @@
+echo '{"from_location":"home","to_location":"work"}' | curl -d @- localhost:8080/logic/get_route_recomendation --header "Content-Type:application/json"
+
+echo '{"from_location":"home","to_location":"work"}' | curl -d @- localhost:8080/logic/get_route_recomendation --header "Content-Type:application/json"
