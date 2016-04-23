@@ -88,13 +88,11 @@ object DataNorge {
         val dato = request.getParameter("dato")
         val skole = request.getParameter("skole")
         val timestamp: Long = System.currentTimeMillis / 1000
-        val out =
-          datasets.map {
-            var out = ""
-
+        val out = "{" +
+          datasets.map {            
             source =>
+              var out = "\"" + source + "\"" + ":[" 
               val df = sqlContext.sql("select * from " + source)
-
               //99% of datasets from Data.Norge has a lat, log
               if (longitude != 0.toDouble && latitude != 0.toDouble && source != "skoleruter") {
                 val dfFields = df.schema.fields.map(_.name)
@@ -109,21 +107,21 @@ object DataNorge {
                 val opentsdbin = "put data.norge." + source + " " + timestamp + " 1 longitude=" + longitude + " latitude=" + latitude                
                 Utils.socketWrite(opentsdbHost, 4242, opentsdbin)
 
-                out = "{" + source + "={" + df.where(Utils.haversine_km(df(dfLatitudeArtName), df(dfLongitudeArtName), latitude, longitude).leq(radius))
-                  .toJSON.collect.mkString(",") + "}}"
+                out += df.where(Utils.haversine_km(df(dfLatitudeArtName), df(dfLongitudeArtName), latitude, longitude).leq(radius))
+                  .toJSON.collect.mkString(",") + "]"
               }
 
               //Data.Norge has a dataset "skoleruter" with no lat, lon. We process query o it differently
               if (dato != null && skole != null && source == "skoleruter") {
                 //Store the request about what people want to see about their city. We can later perform some form of machine learning 
                 val opentsdbin = "put data.norge." + source + " " + timestamp + " 1 dato=" + longitude + " skole=" + skole
-                out = "{" + source + "={" + df.where(df("dato") === dato && df("skole") === skole)
-                  .toJSON.collect.mkString(",") + "}}"
+                out += df.where(df("dato") === dato && df("skole") === skole)
+                  .toJSON.collect.mkString(",") + "]"
                 Utils.socketWrite(opentsdbHost, 4242, opentsdbin)
               }
 
               out
-          }.mkString(",")
+          }.mkString(",")+"}"
 
         StaticServerResponse(Text_Json, out, 200)
     }
