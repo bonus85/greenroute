@@ -40,6 +40,7 @@ object DataNorge {
     val numCores = args(0).toInt
     val datasetNamesFilePath = args(1)
     val dataSetDir = args(2)
+    val opentsdbHost = args(3)
     val sc = CustomSparkContext.create(numCores = numCores)
     val sqlContext = new org.apache.spark.sql.SQLContext(sc)
 
@@ -106,7 +107,7 @@ object DataNorge {
 
                 //Store the request about what people want to see about their city. We can later perform some form of machine learning 
                 val opentsdbin = "put data.norge." + source + " " + timestamp + " 1 longitude=" + longitude + " latitude=" + latitude                
-                Utils.socketWrite("localhost", 4242, opentsdbin)
+                Utils.socketWrite(opentsdbHost, 4242, opentsdbin)
 
                 out = "{" + source + "={" + df.where(Utils.haversine_km(df(dfLatitudeArtName), df(dfLongitudeArtName), latitude, longitude).leq(radius))
                   .toJSON.collect.mkString(",") + "}}"
@@ -118,7 +119,7 @@ object DataNorge {
                 val opentsdbin = "put data.norge." + source + " " + timestamp + " 1 dato=" + longitude + " skole=" + skole
                 out = "{" + source + "={" + df.where(df("dato") === dato && df("skole") === skole)
                   .toJSON.collect.mkString(",") + "}}"
-                Utils.socketWrite("localhost", 4242, opentsdbin)
+                Utils.socketWrite(opentsdbHost, 4242, opentsdbin)
               }
 
               out
