@@ -75,7 +75,7 @@ class AlexaSkill:
         from_location = data["slots"]["FromLocation"]["value"]
         to_location = data["slots"]["ToLocation"]["value"]
         return self.build_response(
-            self.manager.get_route_recomendation(to_location, from_location)[1])
+            self.manager.get_route_recomendation(to_location, from_location)["string"])
             
     def _quick_route_intent(self, data):
         """
@@ -90,7 +90,7 @@ class AlexaSkill:
         """
         location_type = data["slots"]["LocationType"]["value"]
         return self.build_response(
-            self.manager.get_nearest_location(location_type)[1])
+            self.manager.get_nearest_location(location_type)["string"])
         
     def _help_intent(self, data):
         """
@@ -175,13 +175,5 @@ class AlexaSkill:
             "Setting {} location to {} {}".format(location, road_name, road_number))
         
 if __name__ == '__main__':
-    conf = {
-        '/': {
-         'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
-         'tools.sessions.on': True,
-         'tools.response_headers.on': True,
-         'tools.response_headers.headers': [('Content-Type', 'application/json')]
-        }
-    }
-    cherrypy.quickstart(AlexaSkillEndpoint(), '/alexa', conf)
+    pass
 

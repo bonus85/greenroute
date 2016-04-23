@@ -4,10 +4,13 @@
 """
 import datetime
 
+import cherrypy
+
 RAIN_TRESHOLD = 1.0 # mm
 WIND_TRESHOLD = 5.0 # m/s
 
 class RouteManager:
+    exposed=True
 
     def __init__(self):
         self.data_hub = DummyDataHub()
@@ -35,8 +38,10 @@ class RouteManager:
             "fastest": route_data["transportation"][fastest_mode],
             "weather": route_data["weather"]
         }
+        response_dict["greenest"]["mode"] = greenest_mode
+        response_dict["fastest"]["mode"] = fastest_mode
         
-        response_string = ("The greenest route is by {greenest} and the fastest is by {fastest}. "
+        response_dict["string"] = ("The greenest route is by {greenest} and the fastest is by {fastest}. "
             "By {greenest} you save {co2_saved} kilos of carbon dioxide. ").format(
             greenest = greenest_mode,
             fastest = fastest_mode,
@@ -44,20 +49,45 @@ class RouteManager:
                 route_data["transportation"][greenest_mode]["co2"]
             )
         
-        return response_dict, response_string
+        return response_dict
     
     def get_nearest_location(self, location_category):
         location_data = self.data_hub.get_nearest_location(location_category)
         
-        response_string = "The nearest {category} is the {name}.".format(
+        location_data["string"] = "The nearest {category} is the {name}.".format(
             category = location_category,
             name = location_data["location"]["name"]
         )
         if location_data["weather"]["rain"][1] > RAIN_TRESHOLD:
-            response_string += " Remember your raincoat."
+            location_data["string"] += " Remember your raincoat."
         if location_data["weather"]["wind"][1] > WIND_TRESHOLD:
-            response_string += " It is windy, so put on warm clothes"
-        return location_data, response_string
+            location_data["string"] += " It is windy, so put on warm clothes"
+        return location_data
+
+class RouteManagerEndpoint(object):
+    exposed = True
+    
+    def __init__(self):
+        cherrypy.log("Creating RouteManagerEndpoint")
+        self.manager = RouteManager()
+    
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def get_route_recomendation(self):
+        data = cherrypy.request.json
+        from_location = data["from_location"]
+        to_location = data["to_location"]
+        _time = data.get("time", None)
+        return self.manager.get_route_recomendation(from_location, to_location, _time)
+    
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def get_nearest_location(self):
+        data = cherrypy.request.json
+        location_category = data["location_category"]
+        return self.manager.get_nearest_location(location_category)
         
 class DummyDataHub:
     
@@ -85,19 +115,19 @@ class DummyDataHub:
         data = {
             "transportation": {
                 "driving": {
-                    "time": datetime.timedelta(seconds=1336),
+                    "time": 1336, # seconds
                     "co2": 1.3 # kg
                 },
                 "bicycling": {
-                    "time": datetime.timedelta(seconds=1543),
+                    "time": 1543, # seconds
                     "co2": 0 # kg
                 },
                 "walking": {
-                    "time": datetime.timedelta(seconds=2541),
+                    "time": 2541, # seconds
                     "co2": 0 # kg
                 },
                 "transit": {
-                    "time": datetime.timedelta(seconds=1841),
+                    "time": 1841, # seconds
                     "co2": 0.4 # kg
                 },
             },
